@@ -12,6 +12,7 @@ print(device)
 
 train_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/training'
 test_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/testing'
+custom_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/custom'
 
 train_transforms = transforms.Compose([transforms.Resize((224,224)),
                                       transforms.RandomHorizontalFlip(),
@@ -23,6 +24,7 @@ test_transforms = transforms.Compose([transforms.Resize((224,224)),
 
 train_dataset=torchvision.datasets.ImageFolder(root=train_dataset_path,transform=train_transforms)
 test_dataset=torchvision.datasets.ImageFolder(root=test_dataset_path,transform=test_transforms)
+custom_dataset=torchvision.datasets.ImageFolder(root=custom_dataset_path,transform=test_transforms)
 
 
 def show_transformed_images(dataset):
@@ -38,19 +40,38 @@ def show_transformed_images(dataset):
 
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False)
+custom_loader = torch.utils.data.DataLoader(custom_dataset, batch_size=1, shuffle=False)
+
+learning_rate=0.00005
+num_epochs = 30
 
 
-learning_rate=0.0001
-num_epochs = 10
-
-
-model = torchvision.models.resnet34(pretrained=True)
+model = torchvision.models.googlenet(pretrained=True)
 model.to(device)
 #model = HotDogClassifier()
 criterion=nn.CrossEntropyLoss()
 #criterion=nn.BCELoss()
 optimizer = optim.Adam(model.parameters(),lr=learning_rate)
 
+def check_accuracy(loader, model):
+    num_correct = 0
+    num_samples = 0
+    model.eval()
+
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(device=device)
+            y = y.to(device=device)
+            scores = model(x)
+            _, predictions = scores.max(1)
+            num_correct += (predictions == y).sum()
+            num_samples += predictions.size(0)
+
+
+
+
+    model.train()
+    return float(num_correct)/float(num_samples)*100
 
 for epoch in range(num_epochs):
     losses = []
@@ -71,10 +92,15 @@ for epoch in range(num_epochs):
 
         # gradient descent or adam step
         optimizer.step()
-
-    print(f"Cost at epoch {epoch} is {sum(losses)/len(losses)}")
+    val_acc=check_accuracy(test_loader, model)
+    print(f"Cost at epoch {epoch} is {sum(losses)/len(losses)}, Validation acc:{val_acc}")
 
 # Check accuracy on training to see how good our model is
+
+
+
+
+
 def check_accuracy(loader, model):
     num_correct = 0
     num_samples = 0
@@ -84,6 +110,7 @@ def check_accuracy(loader, model):
         for x, y in loader:
             x = x.to(device=device)
             y = y.to(device=device)
+
             scores = model(x)
             _, predictions = scores.max(1)
             num_correct += (predictions == y).sum()
@@ -94,7 +121,6 @@ def check_accuracy(loader, model):
         )
 
     model.train()
-
 
 print("Checking accuracy on Training Set")
 check_accuracy(train_loader, model)
@@ -103,27 +129,6 @@ print("Checking accuracy on Test Set")
 check_accuracy(test_loader, model)
 
 
-def check_accuracy(loader, model):
-    num_correct = 0
-    num_samples = 0
-    model.eval()
 
-    with torch.no_grad():
-        for x, y in loader:
-            x = x.to(device=device)
-            y = y.to(device=device)
 
-            print(y)
-
-            scores = model(x)
-            _, predictions = scores.max(1)
-            print("PREDICTED")
-            print(predictions)
-            num_correct += (predictions == y).sum()
-            num_samples += predictions.size(0)
-
-        print(
-            f"Got {num_correct} / {num_samples} with accuracy {float(num_correct)/float(num_samples)*100:.2f}"
-        )
-
-    model.train()
+torch.save(model, "googlenetmodel.pt")
