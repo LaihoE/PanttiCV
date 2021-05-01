@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
-
 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
@@ -36,14 +35,19 @@ def check_accuracy(loader, model):
 
     with torch.no_grad():
         for x, y in loader:
-            x = x.to(device=device)
-            y = y.to(device=device)
 
-            scores = model(x)
-            _, predictions = scores.max(1)
+            xd = x.to(device=device)
+            yd = y.to(device=device)
 
-            num_correct += (predictions == y).sum()
+            scores = model(xd)
+            scr, predictions = scores.max(1)
+            print(scr)
+            num_correct += (predictions == yd).sum()
             num_samples += predictions.size(0)
+
+            plt.imshow(x[0].permute(1, 2, 0))
+            plt.title([predictions,scr])
+            plt.show()
 
         print(
             f"Got {num_correct} / {num_samples} with accuracy {float(num_correct)/float(num_samples)*100:.2f}"
