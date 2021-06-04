@@ -14,8 +14,7 @@ import torch.optim as optim
 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-train_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/training'
-test_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/testing'
+
 custom_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/custom'
 
 
