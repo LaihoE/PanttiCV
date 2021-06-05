@@ -9,21 +9,8 @@ import torch.optim as optim
 def visualize(path,model_path):
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
-
-    train_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/training'
-    test_dataset_path=r'C:\Users\emill\PycharmProjects\canscanner/testing'
+    
     custom_dataset_path=path
-
-    train_transforms = transforms.Compose([transforms.Resize((224,224)),
-                                          transforms.RandomHorizontalFlip(),
-                                          transforms.RandomRotation(20),
-                                          transforms.ToTensor()])
-
-    test_transforms = transforms.Compose([transforms.Resize((224,224)),
-                                          transforms.ToTensor()])
-
-    train_dataset=torchvision.datasets.ImageFolder(root=train_dataset_path,transform=train_transforms)
-    test_dataset=torchvision.datasets.ImageFolder(root=test_dataset_path,transform=test_transforms)
     custom_dataset=torchvision.datasets.ImageFolder(root=custom_dataset_path,transform=test_transforms)
 
 
@@ -37,9 +24,6 @@ def visualize(path,model_path):
         plt.imshow(np.transpose(grid, (1, 2, 0)))
         print(labels)
 
-
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False)
     custom_loader = torch.utils.data.DataLoader(custom_dataset, batch_size=1, shuffle=False)
 
 
